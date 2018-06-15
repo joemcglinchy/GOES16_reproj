@@ -10,13 +10,15 @@ import time as t
 # Define KM_PER_DEGREE
 KM_PER_DEGREE = 111.32
  
-# GOES-16 Spatial Reference System
+# GOES-16 Spatial Reference System # updated to lon = -75.0 to match movement of system
 sourcePrj = osr.SpatialReference()
-sourcePrj.ImportFromProj4('+proj=geos +h=35786023.0 +a=6378137.0 +b=6356752.31414 +f=0.00335281068119356027489803406172 +lat_0=0.0 +lon_0=-89.5 +sweep=x +no_defs')
+# sourcePrj.ImportFromProj4('+proj=geos +h=35786023.0 +a=6378137.0 +b=6356752.31414 +f=0.00335281068119356027489803406172 +lat_0=0.0 +lon_0=-89.5 +sweep=x +no_defs')
+sourcePrj.ImportFromProj4('+proj=geos +h=35786023.0 +a=6378137.0 +b=6356752.31414 +f=0.00335281068119356027489803406172 +lat_0=0.0 +lon_0=-75.0 +sweep=x +no_defs')
  
 # Lat/lon WSG84 Spatial Reference System
 targetPrj = osr.SpatialReference()
 targetPrj.ImportFromProj4('+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs')
+# targetPrj.ImportFromProj4('+proj=lcc +lon_0=-90')
  
 def exportImage(image,path):
     driver = gdal.GetDriverByName('netCDF')
@@ -109,7 +111,7 @@ def remap(path, extent, resolution, x1, y1, x2, y2):
  
     return grid
     
-def remap2(path, extent, resolution, x1, y1, x2, y2):
+def remap2(path, extent, resolution, x1, y1, x2, y2, targetPrj=''):
      
     # GOES-16 Extent (satellite projection) [llx, lly, urx, ury]
     GOES16_EXTENT = [x1, y1, x2, y2]
@@ -157,7 +159,9 @@ def remap2(path, extent, resolution, x1, y1, x2, y2):
     #print ('Remapping', path)
          
     start = t.time()
-     
+    
+    # print(sourcePrj)
+    
     gdal.ReprojectImage(raw, grid, sourcePrj.ExportToWkt(), targetPrj.ExportToWkt(), gdal.GRA_NearestNeighbour, options=['NUM_THREADS=ALL_CPUS']) 
      
     #print ('- finished! Time:', t.time() - start, 'seconds')
